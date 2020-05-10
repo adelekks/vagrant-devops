@@ -1,0 +1,46 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+ config.vm.define "devops" do |devops|
+  devops.vm.box = "centos/7"
+  devops.vm.network "private_network", :type => 'static', :ip => '192.168.56.200', :adapter => 3
+  # Set hostname
+  devops.vm.hostname = "devops.vagrant.vm"
+  devops.vm.synced_folder ".", "/vagrant", disabled: true
+  devops.vm.provider "virtualbox" do |vb|
+    vb.name = 'devops'
+    # Display the VirtualBox GUI when booting the machine
+    vb.gui = false
+    # Customize the amount of memory on the VM:
+    vb.memory = 1024
+    vb.cpus = 2
+  end
+  devops.vm.provision :shell, path: "lib/bootstrap.sh"
+  devops.vm.provision "shell", inline: <<-SHELL
+     sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config    
+     systemctl restart sshd.service
+  SHELL
+  end
+
+ config.vm.define "devops02" do |devops02|
+  devops02.vm.box = "centos/7"
+  devops02.vm.network "private_network", :type => 'static', :ip => '192.168.56.201', :adapter => 3
+  # Set hostname
+  devops02.vm.hostname = "devops-02.vagrant.vm"
+  devops02.vm.synced_folder ".", "/vagrant", disabled: true
+  devops02.vm.provider "virtualbox" do |vb|
+    vb.name = 'devops-02'
+    # Display the VirtualBox GUI when booting the machine
+    vb.gui = false
+    # Customize the amount of memory on the VM:
+    vb.memory = 1024
+    vb.cpus = 2
+  end
+  devops02.vm.provision :shell, path: "lib/bootstrap.sh"
+  devops02.vm.provision "shell", inline: <<-SHELL
+     sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+     systemctl restart sshd.service
+  SHELL
+  end
+end
